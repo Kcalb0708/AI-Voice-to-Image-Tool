@@ -1,0 +1,45 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Python
+.venv/
+venv/
+__pycache__/
+**/__pycache__/
+.pytest_cache/
+**/.pytest_cache/
+.ruff_cache/
+*.pyc
+*.pyo
+*.pyd
+
+# Node / frontend
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Logs and local runtime output
+*.log
+*.pid
+*.tmp
+tmp/
+temp/
+
+# Trellis local runtime and task workspace
+.trellis/.developer
+.trellis/.current-task
+.trellis/.runtime/
+.trellis/workspace/
+.trellis/tasks/
+
+# Editor and OS files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
