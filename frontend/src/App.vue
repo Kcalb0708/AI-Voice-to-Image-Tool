@@ -21,6 +21,7 @@
 
     <section class="control-rail">
       <VoiceButton :active="status === 'recording'" @toggle="toggleRecording" />
+      <AudioMeter :active="status === 'recording'" :bands="audioBands" />
       <TranscriptPanel
         :status="status"
         :transcript="transcript"
@@ -36,6 +37,7 @@
 import { Download, Trash2 } from '@lucide/vue'
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 
+import AudioMeter from '@/components/AudioMeter.vue'
 import CanvasBoard from '@/components/CanvasBoard.vue'
 import TranscriptPanel from '@/components/TranscriptPanel.vue'
 import VoiceButton from '@/components/VoiceButton.vue'
@@ -45,7 +47,10 @@ import { useCanvasStore } from '@/stores/canvas'
 import type { AppStatus } from '@/types'
 
 const canvas = useCanvasStore()
-const recorder = new AudioRecorder()
+const audioBands = ref(Array.from({ length: 12 }, () => 0))
+const recorder = new AudioRecorder((bands) => {
+  audioBands.value = bands
+})
 
 const status = ref<AppStatus>('idle')
 const transcript = ref('')

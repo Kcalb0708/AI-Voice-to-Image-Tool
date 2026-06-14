@@ -61,7 +61,9 @@ Copy-Item .env.example .env
 ```dotenv
 ASR_API_URL=https://api.openai.com/v1
 ASR_API_KEY=replace-me
-ASR_MODEL=whisper-1
+ASR_MODEL=gpt-4o-mini-transcribe
+ASR_LANGUAGE=zh
+ASR_RESPONSE_FORMAT=json
 
 LLM_BASE_URL=https://api.openai.com/v1
 LLM_API_KEY=replace-me
@@ -72,7 +74,9 @@ LLM_STRUCTURED_OUTPUT_METHOD=json_schema
 配置说明：
 
 - `ASR_API_URL` 可以是 OpenAI 兼容的基础地址，也可以是完整的 `/audio/transcriptions` 地址。
-- `ASR_MODEL` 使用当前服务商支持的语音转文字模型。
+- `ASR_MODEL` 默认使用 `gpt-4o-mini-transcribe`，可按服务商支持情况调整。
+- `ASR_LANGUAGE` 默认指定中文 `zh`。
+- `ASR_RESPONSE_FORMAT` 默认使用 `json`。
 - `LLM_BASE_URL` 是 LangChain `init_chat_model` 使用的 OpenAI 兼容基础地址。
 - `LLM_MODEL` 使用当前服务商支持结构化输出的对话模型。
 - `LLM_STRUCTURED_OUTPUT_METHOD` 默认使用 `json_schema`。

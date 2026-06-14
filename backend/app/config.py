@@ -21,7 +21,9 @@ class Settings(BaseSettings):
 
     asr_api_url: str = ""
     asr_api_key: str = ""
-    asr_model: str = "whisper-1"
+    asr_model: str = "gpt-4o-mini-transcribe"
+    asr_language: str = "zh"
+    asr_response_format: str = "json"
     asr_timeout_seconds: float = Field(default=45.0, gt=0)
 
     llm_base_url: str = ""

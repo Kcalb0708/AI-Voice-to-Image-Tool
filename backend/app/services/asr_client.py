@@ -1,3 +1,4 @@
+import re
 from typing import Any
 
 import httpx
@@ -20,12 +21,17 @@ class ASRClient:
         data: dict[str, str] = {}
         if self.settings.asr_model:
             data["model"] = self.settings.asr_model
+        if self.settings.asr_language:
+            data["language"] = self.settings.asr_language
+        if self.settings.asr_response_format:
+            data["response_format"] = self.settings.asr_response_format
 
+        upload_content_type = normalize_audio_content_type(content_type)
         files = {
             "file": (
                 filename or "speech.webm",
                 audio,
-                content_type or "application/octet-stream",
+                upload_content_type,
             )
         }
 
@@ -40,13 +46,17 @@ class ASRClient:
                 response.raise_for_status()
                 payload = response.json()
         except httpx.HTTPStatusError as exc:
-            raise ProviderResponseError(f"语音识别服务返回状态码 {exc.response.status_code}") from exc
+            provider_message = extract_provider_error_message(exc.response)
+            detail = f"语音识别服务返回状态码 {exc.response.status_code}"
+            if provider_message:
+                detail = f"{detail}：{provider_message}"
+            raise ProviderResponseError(detail) from exc
         except (httpx.HTTPError, ValueError) as exc:
             raise ProviderResponseError("无法读取语音识别服务的响应。") from exc
 
         text = extract_text(payload)
         if not text:
-            raise ProviderResponseError("语音识别服务没有返回文本。")
+            raise ProviderResponseError("语音识别服务没有返回文本，请确认录音中包含清晰语音。")
         return text
 
 
@@ -57,3 +67,46 @@ def extract_text(payload: Any) -> str:
             if isinstance(value, str) and value.strip():
                 return value.strip()
     return ""
+
+
+def normalize_audio_content_type(content_type: str) -> str:
+    media_type = content_type.split(";", 1)[0].strip().lower()
+    return media_type or "application/octet-stream"
+
+
+def extract_provider_error_message(response: httpx.Response) -> str:
+    try:
+        payload = response.json()
+    except ValueError:
+        payload = response.text
+
+    message = extract_error_message(payload)
+    if not message:
+        return ""
+    return sanitize_provider_message(message)
+
+
+def extract_error_message(payload: Any) -> str:
+    if isinstance(payload, dict):
+        error = payload.get("error")
+        if isinstance(error, dict):
+            nested = error.get("message") or error.get("detail")
+            if isinstance(nested, str) and nested.strip():
+                return nested.strip()
+        if isinstance(error, str) and error.strip():
+            return error.strip()
+
+        for key in ("detail", "message", "msg"):
+            value = payload.get(key)
+            if isinstance(value, str) and value.strip():
+                return value.strip()
+    if isinstance(payload, str):
+        return payload.strip()
+    return ""
+
+
+def sanitize_provider_message(message: str) -> str:
+    redacted = re.sub(r"Bearer\s+[\w.\-]+", "Bearer [已隐藏]", message)
+    redacted = re.sub(r"sk-[\w\-]+", "[已隐藏]", redacted)
+    redacted = " ".join(redacted.split())
+    return redacted[:300]

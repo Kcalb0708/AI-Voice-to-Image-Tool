@@ -10,6 +10,14 @@ def test_missing_asr_configuration_is_explicit() -> None:
         settings.ensure_asr_configured()
 
 
+def test_asr_defaults_match_transcription_provider_configuration() -> None:
+    settings = Settings(_env_file=None)
+
+    assert settings.asr_model == "gpt-4o-mini-transcribe"
+    assert settings.asr_language == "zh"
+    assert settings.asr_response_format == "json"
+
+
 def test_cors_origins_are_split() -> None:
     settings = Settings(cors_origins="http://a.test, http://b.test ,,", _env_file=None)
 

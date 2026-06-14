@@ -71,7 +71,9 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
 
 ASR_API_URL=https://api.openai.com/v1
 ASR_API_KEY=replace-me
-ASR_MODEL=whisper-1
+ASR_MODEL=gpt-4o-mini-transcribe
+ASR_LANGUAGE=zh
+ASR_RESPONSE_FORMAT=json
 ASR_TIMEOUT_SECONDS=45
 
 LLM_BASE_URL=https://api.openai.com/v1
@@ -85,6 +87,9 @@ LLM_STRUCTURED_OUTPUT_METHOD=json_schema
 
 - `.env` 不提交到 GitHub，只提交 `.env.example`。
 - `ASR_API_URL` 可以配置为基础地址，也可以配置为完整的 `/audio/transcriptions` 地址。
+- `ASR_MODEL` 默认使用 `gpt-4o-mini-transcribe`。
+- `ASR_LANGUAGE` 默认指定中文 `zh`。
+- `ASR_RESPONSE_FORMAT` 默认使用 `json`。
 - `LLM_BASE_URL` 使用 OpenAI 兼容基础地址，供 LangChain `init_chat_model` 使用。
 - `LLM_API_URL` 仅作为旧配置兼容入口；如果以 `/chat/completions` 结尾，后端会规整为基础地址。
 - 所有对用户可见的后端错误详情、LLM 回复和警告都使用简体中文。

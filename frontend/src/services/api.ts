@@ -2,7 +2,7 @@ import type { AsrResponse, CanvasElement, InterpretResponse } from '@/types'
 
 export async function transcribeAudio(blob: Blob): Promise<string> {
   const form = new FormData()
-  const extension = blob.type.includes('ogg') ? 'ogg' : 'webm'
+  const extension = getAudioExtension(blob.type)
   form.append('audio', blob, `speech.${extension}`)
 
   const response = await fetch('/api/asr', {
@@ -16,6 +16,16 @@ export async function transcribeAudio(blob: Blob): Promise<string> {
 
   const payload = (await response.json()) as AsrResponse
   return payload.text
+}
+
+function getAudioExtension(contentType: string): string {
+  if (contentType.includes('wav')) {
+    return 'wav'
+  }
+  if (contentType.includes('ogg')) {
+    return 'ogg'
+  }
+  return 'webm'
 }
 
 export async function interpretTranscript(text: string, elements: CanvasElement[]): Promise<InterpretResponse> {

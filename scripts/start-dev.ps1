@@ -76,7 +76,7 @@ try {
         Write-Host (U '[\u63d0\u793a] \u540e\u7aef\u7aef\u53e3 8000 \u5df2\u88ab\u5360\u7528\uff0c\u8df3\u8fc7\u540e\u7aef\u542f\u52a8\u3002')
     } else {
         Write-Host (U '[\u542f\u52a8] \u540e\u7aef\u670d\u52a1\uff1ahttp://127.0.0.1:8000')
-        Start-CmdWindow -Title (U '\u8bed\u97f3\u7ed8\u56fe \u540e\u7aef 8000') -WorkingDirectory $backendDir -Command "uv sync && uv run uvicorn app.main:app --host 127.0.0.1 --port 8000"
+        Start-CmdWindow -Title (U '\u8bed\u97f3\u7ed8\u56fe \u540e\u7aef 8000') -WorkingDirectory $backendDir -Command "uv sync && uv run uvicorn app.main:app --reload --host 127.0.0.1 --port 8000"
     }
 
     if (Test-PortBusy -Port 5173) {

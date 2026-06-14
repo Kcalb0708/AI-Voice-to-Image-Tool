@@ -101,7 +101,7 @@ button {
 
 .control-rail {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr);
   gap: 14px;
   min-width: 0;
 }
@@ -134,6 +134,55 @@ button {
 .voice-button--active {
   background: #b53636;
   box-shadow: 0 12px 28px rgba(181, 54, 54, 0.2);
+}
+
+.audio-meter {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #c9d5d5;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.audio-meter__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+  color: #5d6b73;
+  font-size: 13px;
+  font-weight: 720;
+}
+
+.audio-meter__header strong {
+  color: #20313a;
+  font-size: 12px;
+  font-weight: 760;
+}
+
+.audio-meter__bars {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: end;
+  gap: 4px;
+  height: 48px;
+  padding: 6px;
+  border-radius: 8px;
+  background: #f4f7f6;
+  overflow: hidden;
+}
+
+.audio-meter__bar {
+  display: block;
+  height: 100%;
+  min-height: 4px;
+  border-radius: 4px 4px 2px 2px;
+  background: linear-gradient(180deg, #45a89d 0%, #176b63 100%);
+  transform-origin: bottom;
+  transition: transform 80ms linear;
 }
 
 .panel {
@@ -240,13 +289,23 @@ button {
 
   .control-rail {
     grid-template-columns: minmax(180px, 260px) minmax(0, 1fr);
-    grid-template-rows: auto;
+    grid-template-rows: auto auto;
+  }
+
+  .panel {
+    grid-column: 2;
+    grid-row: 1 / span 2;
   }
 }
 
 @media (max-width: 620px) {
   .control-rail {
     grid-template-columns: 1fr;
+  }
+
+  .panel {
+    grid-column: auto;
+    grid-row: auto;
   }
 
   .topbar {

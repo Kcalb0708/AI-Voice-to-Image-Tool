@@ -35,6 +35,9 @@ class DrawingCommand(BaseModel):
 Request contracts:
 
 - `/api/asr` requires a non-empty uploaded audio file.
+- The browser recorder should use native `MediaRecorder` capture, decode the recorded blob in-browser, and upload mono 16-bit WAV (`audio/wav`, filename `speech.wav`) for provider compatibility.
+- The browser recorder should reject only recordings with no captured audio data or very short duration; do not hard-block low-volume recordings before ASR because local amplitude checks can produce false positives.
+- Browser audio uploads may include codec parameters such as `audio/webm;codecs=opus`; strip MIME parameters before forwarding the multipart file to the ASR provider.
 - `/api/interpret.text` is required and is capped at 2000 characters.
 - `/api/interpret.elements` is an optional list capped at 200 current elements.
 
@@ -48,8 +51,10 @@ Response contracts:
 
 Environment contracts:
 
-- `ASR_API_URL`, `ASR_API_KEY`, `ASR_MODEL`, `ASR_TIMEOUT_SECONDS`
+- `ASR_API_URL`, `ASR_API_KEY`, `ASR_MODEL`, `ASR_LANGUAGE`, `ASR_RESPONSE_FORMAT`, `ASR_TIMEOUT_SECONDS`
 - `ASR_API_URL` may be either a base URL or a full `/audio/transcriptions` endpoint; normalize base URLs before posting audio.
+- `ASR_MODEL` defaults to `gpt-4o-mini-transcribe`.
+- `ASR_LANGUAGE` defaults to `zh`; `ASR_RESPONSE_FORMAT` defaults to `json`.
 - `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`, `LLM_TIMEOUT_SECONDS`, `LLM_STRUCTURED_OUTPUT_METHOD`
 - `LLM_API_URL` is accepted only as legacy compatibility; if it ends with `/chat/completions`, normalize it to the base URL required by LangChain `init_chat_model`.
 
@@ -58,6 +63,8 @@ Environment contracts:
 - Empty audio upload -> `400`
 - Missing ASR configuration -> `503`
 - ASR provider/network/unreadable response -> `502`
+- ASR provider non-2xx response -> `502` with the provider status code and a sanitized provider error message when available
+- ASR provider returns success without recognized text -> `502` with a Chinese message that asks the user to confirm clear speech was recorded
 - Missing LLM configuration -> `503`
 - LLM provider/network/unreadable structured output -> `502`
 - LLM output fails Pydantic schema validation -> `502`
@@ -67,7 +74,11 @@ Environment contracts:
 ### 5. Good/Base/Bad Cases
 
 - Good: a valid transcript plus current element summary returns one or more sanitized commands and a short reply.
+- Good: browser recording uploads `speech.wav` with `audio/wav`, and the ASR provider returns `{text}`.
 - Base: a valid provider response includes one unsafe command and one safe command; the unsafe command is skipped and the safe command is returned.
+- Bad: browser recording contains only silence; backend should return a clear Chinese error if the ASR provider accepts the file but returns no text.
+- Bad: browser recording is captured by a hand-written `ScriptProcessorNode` PCM pipeline that can produce valid-but-silent WAV files in some browsers; prefer native `MediaRecorder` capture followed by in-browser WAV transcoding.
+- Bad: browser recording uploads WebM/Opus to an OpenAI-compatible gateway that rejects or 500s on that container; prefer WAV encoding before upload.
 - Bad: provider returns malformed JSON or a schema-incompatible command object; return `502` instead of forwarding unsafe data.
 - Bad: backend returns English error details such as `"Command interpretation failed"`; return a Chinese message instead.
 
@@ -77,6 +88,8 @@ Environment contracts:
 - `/api/interpret` returns sanitized commands when the LLM client returns a valid payload.
 - `/api/interpret` skips unsafe single commands while preserving valid commands.
 - Config tests assert missing provider keys fail explicitly and legacy `LLM_API_URL` normalization works.
+- ASR client tests assert upload MIME parameters are stripped and provider error messages are sanitized before being surfaced.
+- Frontend recorder tests assert WAV blobs contain a valid RIFF/WAVE header, mono PCM format, sample rate, and data length.
 - UI-facing error/message scans should check common English strings after localization work.
 
 ### 7. Wrong vs Correct
